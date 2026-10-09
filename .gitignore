@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Generated data and pipeline outputs
+data/
+spark-warehouse/
+metastore_db/
+derby.log
+*.parquet
+_delta_log/
+checkpoints/
+
+# Spark / IDE / OS
+.ivy2/
+.idea/
+.vscode/
+.DS_Store
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Databricks bundle state
+.databricks/

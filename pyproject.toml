@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lakehouse-medallion-pipeline"
+version = "0.1.0"
+description = "Bronze/silver/gold lakehouse pipeline in PySpark with SCD Type 2, data-quality checks and tests."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Veeranjan Reddy" }]
+requires-python = ">=3.11,<3.12"
+dependencies = ["pyspark==3.5.3"]
+
+[project.optional-dependencies]
+delta = ["delta-spark==3.2.1"]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+lakehouse-generate = "lakehouse.generate:main"
+lakehouse-run = "lakehouse.pipeline:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+addopts = "-ra -q"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501", "RUF012"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["lakehouse"]

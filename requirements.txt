@@ -1,0 +1,9 @@
+# Runtime
+pyspark==3.5.3
+# Optional: Delta Lake storage (`--format delta`). Needs the Delta JARs at runtime,
+# which delta-spark resolves from Maven Central (or set LAKEHOUSE_SPARK_JARS).
+delta-spark==3.2.1
+
+# Development
+pytest==8.3.4
+ruff==0.8.6
