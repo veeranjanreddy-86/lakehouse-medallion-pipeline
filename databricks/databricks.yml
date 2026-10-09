@@ -1,0 +1,80 @@
+# ILLUSTRATIVE EXAMPLE - Databricks Asset Bundle for this pipeline.
+# Not deployed from this repository. Host, catalog, paths and node types are placeholders.
+bundle:
+  name: lakehouse-medallion-pipeline
+
+variables:
+  catalog:
+    description: Unity Catalog catalog for the medallion schemas
+    default: dev_lakehouse
+  landing_path:
+    description: Cloud storage path (or UC volume) where CDC JSON files land
+    default: /Volumes/dev_lakehouse/landing/cdc
+  dq_mode:
+    default: fail
+
+artifacts:
+  lakehouse_wheel:
+    type: whl
+    path: ..
+    build: python -m pip wheel --no-deps -w dist ..
+
+resources:
+  jobs:
+    lakehouse_medallion_job:
+      name: lakehouse-medallion-${bundle.target}
+      schedule:
+        quartz_cron_expression: "0 0 * * * ?"   # hourly micro-batch
+        timezone_id: UTC
+        pause_status: PAUSED
+      job_clusters:
+        - job_cluster_key: etl
+          new_cluster:
+            spark_version: 15.4.x-scala2.12      # DBR LTS with Spark 3.5 + Delta 3.x
+            node_type_id: <node-type>
+            num_workers: 2
+            data_security_mode: SINGLE_USER
+      tasks:
+        - task_key: medallion_pipeline
+          job_cluster_key: etl
+          python_wheel_task:
+            package_name: lakehouse_medallion_pipeline
+            entry_point: lakehouse-run
+            parameters:
+              - --format
+              - delta
+              - --landing-dir
+              - ${var.landing_path}
+              - --base-dir
+              - /Volumes/${var.catalog}/medallion/tables
+              - --dq-mode
+              - ${var.dq_mode}
+          libraries:
+            - whl: ../dist/*.whl
+
+  # Alternative: the same layers as a Delta Live Tables pipeline (see README.md).
+  pipelines:
+    lakehouse_medallion_dlt:
+      name: lakehouse-medallion-dlt-${bundle.target}
+      catalog: ${var.catalog}
+      target: medallion
+      serverless: true
+      libraries:
+        - notebook:
+            path: ./dlt_pipeline.py   # placeholder: DLT port of bronze/silver/gold
+      configuration:
+        landing_path: ${var.landing_path}
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://<your-workspace>.cloud.databricks.com
+  prod:
+    mode: production
+    workspace:
+      host: https://<your-workspace>.cloud.databricks.com
+    variables:
+      catalog: prod_lakehouse
+      landing_path: /Volumes/prod_lakehouse/landing/cdc
