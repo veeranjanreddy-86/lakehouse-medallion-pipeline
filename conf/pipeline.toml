@@ -1,0 +1,24 @@
+# Local development configuration. Paths are relative to the repository root.
+log_level = "INFO"
+
+[paths]
+landing_dir = "data/landing"
+base_dir = "data/lakehouse"
+
+[storage]
+# "parquet" works fully offline. "delta" requires the Delta Lake JARs
+# (resolved from Maven by delta-spark, or pre-provisioned via LAKEHOUSE_SPARK_JARS).
+format = "parquet"
+
+[spark]
+master = "local[2]"
+shuffle_partitions = 4
+
+[spark.conf]
+"spark.sql.session.timeZone" = "UTC"
+
+[data_quality]
+# "fail": raise after writing the report if any error-severity check fails.
+# "warn": log failures, never raise.
+mode = "fail"
+max_quarantine_ratio = 0.02
